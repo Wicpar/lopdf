@@ -62,7 +62,7 @@ impl<'a> Encoding<'a> {
             }
             Self::UnicodeMapEncoding(unicode_map) => {
 				let map = unicode_map.get_best_possible_reverse_map();
-				text.encode_utf16().filter_map(|it|map.get(&it).copied()).flat_map(|it|it.to_be_bytes())
+				text.encode_utf16().filter_map(|it|map.get(&it).copied()).flat_map(|it|it.to_be_bytes()).collect()
             }
             _ => string_to_bytes(&STANDARD_ENCODING, text),
         }
