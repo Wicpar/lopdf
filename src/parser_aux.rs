@@ -89,7 +89,7 @@ impl Document {
         Ok(text)
     }
 
-    pub fn replace_text(&mut self, page_number: u32, replace: impl FnMut(String) -> Option<String>) -> Result<()> {
+    pub fn replace_text(&mut self, page_number: u32, mut replace: impl FnMut(String) -> Option<String>) -> Result<()> {
         let page_id = self
             .page_iter()
             .nth(page_number as usize - 1)
