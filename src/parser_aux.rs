@@ -15,6 +15,7 @@ use std::{
     collections::BTreeMap,
     io::{Cursor, Read},
 };
+use std::str::pattern::Pattern;
 
 impl Content<Vec<Operation>> {
     /// Decode content operations.
@@ -89,7 +90,9 @@ impl Document {
         Ok(text)
     }
 
-    pub fn replace_text(&mut self, page_number: u32, text: &str, other_text: &str) -> Result<()> {
+    pub fn replace_text<'a, P>(&mut self, page_number: u32, pattern: P, other_text: &str) -> Result<()>
+	where P: Pattern<'a>
+	{
         let page_id = self
             .page_iter()
             .nth(page_number as usize - 1)
@@ -115,8 +118,9 @@ impl Document {
                 "Tj" => {
                     for bytes in operation.operands.iter_mut().flat_map(Object::as_str_mut) {
                         let decoded_text = Document::decode_text(current_encoding, bytes)?;
-                        if decoded_text == text {
-                            let encoded_bytes = Document::encode_text(current_encoding, other_text);
+						let replaced = decoded_text.replace(&pattern, to);
+                        if replaced != decoded_text {
+                            let encoded_bytes = Document::encode_text(current_encoding, &replaced);
                             *bytes = encoded_bytes;
                         }
                     }
