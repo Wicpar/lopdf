@@ -116,7 +116,7 @@ impl Document {
                     for bytes in operation.operands.iter_mut().flat_map(Object::as_str_mut) {
                         let decoded_text = Document::decode_text(current_encoding, bytes)?;
                         if let Some(replaced) = replace(decoded_text) {
-							*bytes = Document::encode_text(Some(&Encoding::SimpleEncoding("UniGB-UTF16-H")), &replaced);
+							*bytes = Document::encode_text(current_encoding, &replaced);
                         }
                     }
                 }
