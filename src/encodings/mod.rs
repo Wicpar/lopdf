@@ -60,9 +60,9 @@ impl<'a> Encoding<'a> {
             Self::SimpleEncoding(name) if ["UniGB-UCS2-H", "UniGB-UTF16-H"].contains(name) => {
                 UTF_16BE.encode(text, EncoderTrap::Ignore).unwrap()
             }
-            Self::UnicodeMapEncoding(_unicode_map) => {
-                //maybe only possible if the unicode map is an identity?
-                unimplemented!()
+            Self::UnicodeMapEncoding(unicode_map) => {
+				let map = unicode_map.get_best_possible_reverse_map();
+				text.encode_utf16().filter_map(|it|map.get(&it).copied()).flat_map(|it|it.to_be_bytes())
             }
             _ => string_to_bytes(&STANDARD_ENCODING, text),
         }

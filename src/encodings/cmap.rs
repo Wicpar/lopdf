@@ -1,4 +1,6 @@
 extern crate rangemap;
+
+use std::collections::HashMap;
 use crate::cmap_parser::{cmap_stream, CMapSection};
 use rangemap::RangeInclusiveMap;
 use std::fmt;
@@ -92,6 +94,14 @@ impl ToUnicodeCMap {
             ArrayOfHexStrings(ref vec_of_strings) => vec_of_strings[(code - range.start()) as usize].clone(),
         })
     }
+
+	pub fn get_best_possible_reverse_map(&self) -> HashMap<u16, u16> {
+		self.bf_ranges.iter().filter_map(|(k, v)| match v {
+			BfRangeTarget::HexString(_) => None,
+			BfRangeTarget::UTF16CodePoint { offset } => Some(k.map(|code|(u16::wrapping_add(code, *offset), code))),
+			BfRangeTarget::ArrayOfHexStrings(_) => None
+		}).flatten().collect()
+	}
 
     pub fn get_or_replacement_char(&self, code: u16) -> Vec<u16> {
         self.get(code).unwrap_or(vec![0xfffd])
