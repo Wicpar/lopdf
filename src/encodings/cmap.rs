@@ -98,7 +98,7 @@ impl ToUnicodeCMap {
 	pub fn get_best_possible_reverse_map(&self) -> HashMap<u16, u16> {
 		self.bf_ranges.iter().filter_map(|(k, v)| match v {
 			BfRangeTarget::HexString(_) => None,
-			BfRangeTarget::UTF16CodePoint { offset } => Some(k.map(|code|(u16::wrapping_add(code, *offset), code))),
+			BfRangeTarget::UTF16CodePoint { offset } => Some(k.clone().map(move |code|(u16::wrapping_add(code, *offset), code))),
 			BfRangeTarget::ArrayOfHexStrings(_) => None
 		}).flatten().collect()
 	}
