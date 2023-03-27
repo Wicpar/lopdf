@@ -41,15 +41,16 @@ impl<'a> Encoding<'a> {
                 .decode(bytes, DecoderTrap::Ignore)
                 .map_err(|_| Error::ContentDecode),
             Self::UnicodeMapEncoding(unicode_map) => {
-                let utf16_str: Vec<u8> = bytes
+                let glyphs = bytes
                     .chunks_exact(2)
                     .map(|chunk| chunk[0] as u16 * 256 + chunk[1] as u16)
-                    .flat_map(|cp| unicode_map.get_or_replacement_char(cp))
-                    .flat_map(|it| [(it / 256) as u8, (it % 256) as u8])
-                    .collect();
-                UTF_16BE
-                    .decode(&utf16_str, DecoderTrap::Ignore)
-                    .map_err(|_| Error::ContentDecode)
+                    .flat_map(|cp| {
+						// println!("{cp:x}");
+						let ret = unicode_map.get_or_replacement_char(cp);
+						// println!("{}", String::from_utf16_lossy(&ret));
+						ret
+					}).collect::<Vec<_>>();
+				Ok(String::from_utf16_lossy(&glyphs))
             }
             _ => Err(Error::ContentDecode),
         }

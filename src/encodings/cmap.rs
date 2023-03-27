@@ -96,10 +96,23 @@ impl ToUnicodeCMap {
     }
 
 	pub fn get_best_possible_reverse_map(&self) -> HashMap<u16, u16> {
-		self.bf_ranges.iter().filter_map(|(k, v)| match v {
-			BfRangeTarget::HexString(_) => None,
-			BfRangeTarget::UTF16CodePoint { offset } => Some(k.clone().map(move |code|(u16::wrapping_add(code, *offset), code))),
-			BfRangeTarget::ArrayOfHexStrings(_) => None
+		self.bf_ranges.iter().filter_map(|(range, target)| match target {
+			BfRangeTarget::HexString(x) => {
+				unimplemented!("Don't know how to reverse HexString: {k:?} {x:?}");
+			},
+			BfRangeTarget::UTF16CodePoint { offset } => Some(range.clone().map(move |code|(u16::wrapping_add(code, *offset), code))),
+			BfRangeTarget::ArrayOfHexStrings(v) => {
+				let start = *range.start();
+				Some(range.clone().filter_map(move |code| {
+					let arr = v.get((code - start) as usize);
+					if let Some([value]) = arr.as_ref().map(|it|it.as_slice()) {
+						Some((*value, code))
+					} else {
+						println!("Skipping HexStringArray: {k:?} {v:?}");
+						None
+					}
+				}))
+			}
 		}).flatten().collect()
 	}
 
